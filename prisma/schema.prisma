@@ -2,19 +2,36 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Asset {
+  id                     Int       @id @default(autoincrement())
+  createdAt              DateTime  @default(now())
+  asset_code             String
+  asset_issuer_address   String
+  stellar_asset_contract String?   @unique
+  Auction                Auction[]
 
-    @@index([name])
+  @@unique([asset_code, asset_issuer_address])
+  @@index([asset_code, asset_issuer_address])
+}
+
+model Auction {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  assetId        Int
+  owner_address  String
+  current_bid    Float
+  current_bidder String?
+  bid_count      Int       @default(0)
+  closed_at      DateTime?
+  asset          Asset     @relation(fields: [assetId], references: [id])
+
+  @@index([assetId])
 }
